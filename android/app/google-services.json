@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "59990636906",
+    "firebase_url": "https://lockerreservation.firebaseio.com",
+    "project_id": "lockerreservation",
+    "storage_bucket": "lockerreservation.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:59990636906:android:10f93eae7c9000ffe44d13",
+        "android_client_info": {
+          "package_name": "com.sahilsheth.locker_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "59990636906-e670kv4ksgm9oio7f39eq7lv0tvoj9er.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVAPeEl_4KiN7im-AaXC969L-QzZO20EU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "59990636906-e670kv4ksgm9oio7f39eq7lv0tvoj9er.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
