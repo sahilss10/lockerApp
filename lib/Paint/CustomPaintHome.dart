@@ -13,7 +13,7 @@ class TopBar_home extends StatelessWidget {
 }
 
 class HomePainter extends CustomPainter {
-  Color colorOne = Colors.indigo[1000];
+  Color colorOne = Colors.indigo[900];
   Color colorTwo = Colors.indigo[300];
   Color colorThree = Colors.indigo[100];
 

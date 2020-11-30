@@ -2,13 +2,69 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:locker_app/Transitions/SlideTransition.dart';
 import 'package:locker_app/Pages/payment.dart';
+import 'package:locker_app/helper/locker_data.dart';
+import 'package:locker_app/helper/LOCKERS_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:locker_app/helper/helper_lists.dart';
+
 
 class DraggableSheet extends StatelessWidget {
+  dynamic lock;
+  Struct locker;
+  DraggableSheet(this.locker);
+
+  Future getLockerData() async {
+    List<Locker> list = new List();
+    List<bool> boollist = new List();
+
+    Firestore.instance
+        .collection("Locker")
+        .document(locker.title)
+        .collection("EachLocker")
+        .snapshots()
+        .listen((snapshot) {
+      snapshot.documents.forEach((doc) => list.add(new Locker(
+          doc['available'] == "true" ? true : false,
+          doc['rented to'],
+          doc['locker no'],
+          doc.documentID,
+          doc['qrcode'])));
+    });
+    if (list != null) lockerList = list;
+    boollist = List.generate(
+        lockerList.length, (i) => lockerList[i].availability ? true : false);
+    if (boollist != null) lockers = boollist;
+
+    return lockerList;
+  }
+
   @override
   Widget build(BuildContext context) {
+    String time;
+    DateFormat dateFormat = new DateFormat.Hm();
+    DateTime now = DateTime.now();
+    DateTime open = dateFormat.parse("5:00");
+    open = new DateTime(now.year, now.month, now.day, open.hour, open.minute);
+    DateTime close = dateFormat.parse("23:00");
+    close =
+    new DateTime(now.year, now.month, now.day, close.hour, close.minute);
+    print(open.toString() + "  " + close.toString());
+    Color t = Colors.red;
+    if (now.isAfter(open) && now.isBefore(close)) {
+      time = 'Open Now';
+      t = Colors.green;
+    } else
+      time = "Closed";
+
+    Color money = Colors.green;
+    if (locker.availablelockers == "0") {
+      money = Colors.red;
+    }
+
     return DraggableScrollableSheet(
-      initialChildSize: 0.25,
-      maxChildSize: 0.65,
+      initialChildSize: 0.35,
+      maxChildSize: 0.60,
       minChildSize: 0.25,
       builder: (context, scrollController) {
         return SingleChildScrollView(
@@ -20,7 +76,7 @@ class DraggableSheet extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
               ),
-              height: MediaQuery.of(context).size.height * 0.80,
+              height: MediaQuery.of(context).size.height * 0.90,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -46,7 +102,7 @@ class DraggableSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              'Bhartiya Vidhyapeet',
+                              locker.title,
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 22.4,
@@ -57,7 +113,7 @@ class DraggableSheet extends StatelessWidget {
                               height: 8,
                             ),
                             Text(
-                              'Pune - Sector V',
+                              locker.subtitle,
                               style: TextStyle(
                                   fontWeight: FontWeight.w400,
                                   color: Colors.black54,
@@ -73,9 +129,9 @@ class DraggableSheet extends StatelessWidget {
                                   child: Padding(
                                     padding: const EdgeInsets.all(2.0),
                                     child: Icon(
-                                      Icons.lock,
+                                      Icons.lock_open_outlined,
                                       size: 16,
-                                      color: Colors.white,
+                                      color: money,
                                     ),
                                   ),
                                   color: Colors.grey[900],
@@ -85,7 +141,7 @@ class DraggableSheet extends StatelessWidget {
                                   width: 4,
                                 ),
                                 Text(
-                                  '24 available',
+                                  locker.availablelockers.toString(),
                                   style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12.4),
@@ -109,7 +165,7 @@ class DraggableSheet extends StatelessWidget {
                                   width: 4,
                                 ),
                                 Text(
-                                  '10.44 rs/h',
+                                  locker.price.toString() + ' rs/h',
                                   style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12.4),
@@ -120,13 +176,12 @@ class DraggableSheet extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 18.0, top: 8),
+                        padding: const EdgeInsets.only(right: 18.0, top: 15),
                         child: ClipRRect(
-                          child: Image.asset(
-                            'image/locker.jpeg',
-                            fit: BoxFit.cover,
-                            width: 120,
-                            height: 110,
+                          child: Image.network(
+                            locker.image,
+                            height: 110.0,
+                            width: 120.0,
                           ),
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -143,8 +198,12 @@ class DraggableSheet extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6)),
                         onPressed: () {
-                          Navigator.push(
-                              context, SlideTopRoute(page: MyPaymentPage()));
+                          selectedLock = locker;
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MyPaymentPage(locker)),
+                          );
                         },
                         color: Colors.indigo[500],
                         padding: EdgeInsets.symmetric(vertical: 14),
@@ -180,7 +239,7 @@ class DraggableSheet extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 24.0),
                     child: Text(
-                      '05:00 AM - 11:00 PM',
+                      '5:00 AM - 11:00 PM',
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: Colors.grey[900],
@@ -194,10 +253,10 @@ class DraggableSheet extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 24.0),
                     child: Text(
-                      'Open Now',
+                      time,
                       style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          color: Colors.green,
+                          color: t,
                           fontSize: 12.4,
                           letterSpacing: 0.2),
                     ),
@@ -232,7 +291,7 @@ class DraggableSheet extends StatelessWidget {
                           width: 10,
                         ),
                         Text(
-                          '886-445-7822',
+                          locker.mob,
                           style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: Colors.grey[900],
@@ -258,7 +317,7 @@ class DraggableSheet extends StatelessWidget {
                           width: 10,
                         ),
                         Text(
-                          'email@gmail.com',
+                          locker.email,
                           style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: Colors.grey[900],
@@ -288,12 +347,32 @@ class DraggableSheet extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 24.0),
                     child: Text(
-                      'Bhartiya Vidhyapeet - Pune - Sector V',
+                      locker.title + " - " + locker.subtitle,
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: Colors.grey[900],
                           fontSize: 16.5,
                           letterSpacing: 0.2),
+                    ),
+                  ),
+                  Container(
+                    height: 0,
+                    width: 0,
+                    child: FutureBuilder(
+                      future: getLockerData(),
+                      builder: (context, snapshot) {
+                        print(lockerList.length.toString() +
+                            " lockers from bottomshit");
+                        print(lockerList.length.toString() +
+                            " lockerList from bottomshit");
+                        if (snapshot.data != null)
+                          return Container(
+                            width: 0,
+                            height: 0,
+                          );
+                        else
+                          return  CircularProgressIndicator();
+                      },
                     ),
                   ),
                 ],

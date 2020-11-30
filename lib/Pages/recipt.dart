@@ -1,15 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:locker_app/Pages/map.dart';
+import 'package:locker_app/Pages/map_tracking.dart';
+import 'package:locker_app/services/payment_service.dart';
+
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:ui';
+import 'package:flutter/rendering.dart';
 
 class MyRecipt extends StatefulWidget {
+  PaymentTransaction transaction;
+
+  MyRecipt(this.transaction);
+
   @override
   State createState() => _MyReciptState();
 }
 
 class _MyReciptState extends State<MyRecipt> {
+
+  GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
+  String qrData ;
+  @override
+  void initState() {
+    setState(() {
+      qrData= widget.transaction.qrcode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      key: _drawerKey,
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget>[
+            new UserAccountsDrawerHeader(
+              accountEmail: new Text("ramesh@gmail.com"),
+              accountName: new Text("Ramesh"),
+              currentAccountPicture: new GestureDetector(
+                child: new CircleAvatar(
+                  backgroundColor: Colors.white,
+//                        backgroundImage: new NetworkImage(currentProfilePic),
+                ),
+                onTap: () => print("This is your current account."),
+              ),
+
+              decoration: new BoxDecoration(
+                color: Colors.indigo[500],
+                /*image: new DecorationImage(
+                            image: new NetworkImage(
+                                "https://img00.deviantart.net/35f0/i/2015/018/2/6/low_poly_landscape__the_river_cut_by_bv_designs-d8eib00.jpg"),
+                            fit: BoxFit.fill)*/
+              ),
+            ),
+            new ListTile(
+                title: new Text("Profile"),
+                trailing: new Icon(Icons.person),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) => MapView()));
+                }),
+            new ListTile(
+                title: new Text("Wallet"),
+                trailing: new Icon(Icons.account_balance_wallet),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) => MapView()));
+                }),
+            new ListTile(
+                title: new Text("Transactions"),
+                trailing: new Icon(Icons.monetization_on),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) => MapView()));
+                }),
+            new Divider(),
+            new ListTile(
+              title: new Text("Logout"),
+              trailing: new Icon(Icons.arrow_back),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: SafeArea(
           child: Padding(
@@ -17,6 +94,40 @@ class _MyReciptState extends State<MyRecipt> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+
+
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: AppBar(
+                    leading: Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child:
+                      GestureDetector(
+
+                        onTap: (){_drawerKey.currentState.openDrawer();},
+                        child:
+                        Icon(
+                          Icons.menu,
+                          color: Colors.white.withOpacity(0.9),
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                    title: Center(
+                      child: Text(
+                        'Lockers',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 34,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Quickstand'),
+                      ),
+                    ),
+
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                  ),
+                ),
                 SizedBox(
                   height: 24,
                 ),
@@ -50,11 +161,9 @@ class _MyReciptState extends State<MyRecipt> {
                   height: 32,
                 ),
                 Center(
-                  child: Image.asset(
-                    'image/qr_code.jpg',
-                    width: 220,
-                    height: 200,
-                    fit: BoxFit.cover,
+                  child: QrImage(
+                    //plce where the QR Image will be shown
+                    data: qrData,
                   ),
                 ),
                 SizedBox(
@@ -79,9 +188,9 @@ class _MyReciptState extends State<MyRecipt> {
                             height: 8,
                           ),
                           Text(
-                            '#12-51-65',
+                               widget.transaction.qrcode,
                             style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 32),
+                                fontWeight: FontWeight.w700, fontSize: 15),
                           ),
                         ],
                       ),
@@ -99,7 +208,7 @@ class _MyReciptState extends State<MyRecipt> {
                             height: 8,
                           ),
                           Text(
-                            'F1-B4',
+                            widget.transaction.lockerName,
                             style: TextStyle(
                                 fontWeight: FontWeight.w700, fontSize: 32),
                           ),
@@ -130,9 +239,9 @@ class _MyReciptState extends State<MyRecipt> {
                             height: 8,
                           ),
                           Text(
-                            '10:10 AM',
+                            widget.transaction.startTime.toString(),
                             style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 20),
+                                fontWeight: FontWeight.w700, fontSize: 10),
                           ),
                         ],
                       ),
@@ -150,9 +259,9 @@ class _MyReciptState extends State<MyRecipt> {
                             height: 8,
                           ),
                           Text(
-                            '12:20 PM',
+                            widget.transaction.endTime.toString(),
                             style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 20),
+                                fontWeight: FontWeight.w700, fontSize: 10),
                           ),
                         ],
                       ),
@@ -179,11 +288,11 @@ class _MyReciptState extends State<MyRecipt> {
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
-                    'Bhartiya Vidhyapeet - Pune - Sector V',
+                      widget.transaction.address,
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: Colors.grey[900],
-                        fontSize: 16.4,
+                        fontSize: 12.4,
                         letterSpacing: 0.2),
                   ),
                 ),
@@ -198,7 +307,16 @@ class _MyReciptState extends State<MyRecipt> {
                       elevation: 6,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6)),
-                      onPressed: () {},
+                      onPressed: () {
+
+                        Navigator.pushReplacement(
+                          context,
+                          new MaterialPageRoute(
+                            builder: (context) => MapTrack(widget.transaction,qrData),
+                          ),
+                        );
+
+                      },
                       color: Colors.indigo[500],
                       padding: EdgeInsets.symmetric(vertical: 14),
                       child: Text(
@@ -220,4 +338,6 @@ class _MyReciptState extends State<MyRecipt> {
       ),
     );
   }
+
+
 }

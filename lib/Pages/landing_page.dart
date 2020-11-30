@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:locker_app/Pages/home.dart';
 import 'package:locker_app/Pages/sign_in_page.dart';
 import 'package:locker_app/services/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LandingPage extends StatefulWidget {
   LandingPage({@required this.auth});
@@ -11,7 +12,7 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
-  User _user;
+  FirebaseUser _user;
 
   @override
   void initState() {
@@ -20,14 +21,15 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   Future<void> _checkCurrentUser() async {
-    User user = await widget.auth.currentUser();
+    FirebaseUser user = await widget.auth.currentUser();
     _updateUser(user);
   }
 
-  void _updateUser(User user) {
+  void _updateUser(FirebaseUser user) {
     setState(() {
       _user = user;
     });
+    if(user!=null)
     print('${user.uid}');
   }
 
@@ -39,9 +41,12 @@ class _LandingPageState extends State<LandingPage> {
         onSignIn: _updateUser,
       );
     }
-    return MyHomePage(
-      auth: widget.auth,
-      onSignOut: () => _updateUser(null),
-    ); //temporary to be replaced by homepage
+    else {
+
+      return MyHomePage(
+        auth: widget.auth,
+
+      ); //temporary to be replaced by homepage
+    }
   }
 }

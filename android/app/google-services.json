@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "59990636906-n8lmdo53polk7mipcp06qualmrm97h98.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sahilsheth.locker_app",
+            "certificate_hash": "e2efe60b9acdb3c84849519af5f7b340bab645e0"
+          }
+        },
+        {
           "client_id": "59990636906-e670kv4ksgm9oio7f39eq7lv0tvoj9er.apps.googleusercontent.com",
           "client_type": 3
         }
